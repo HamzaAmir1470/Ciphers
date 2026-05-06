@@ -24,8 +24,8 @@ string decrypt(string cipher, string key) {
 }
 
 int main() {
-    string text = "HELLO";
-    string key = "KEY";
+    string text = "WEAREDISCOVEREDSAVEYOURSELF";
+    string key = "DECEPTIVE";
 
     key = generateKey(text, key);
 

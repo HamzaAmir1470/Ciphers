@@ -3,32 +3,10 @@ using namespace std;
 
 char matrix[5][5];
 
-// Generate matrix
-void generateMatrix(string key) {
-    bool used[26] = {false};
-    int i = 0, j = 0;
-
-    for (char c : key) {
-        if (c == 'J') c = 'I';
-        if (!used[c - 'A']) {
-            matrix[i][j++] = c;
-            used[c - 'A'] = true;
-            if (j == 5) { i++; j = 0; }
-        }
-    }
-
-    for (char c = 'A'; c <= 'Z'; c++) {
-        if (c == 'J') continue;
-        if (!used[c - 'A']) {
-            matrix[i][j++] = c;
-            if (j == 5) { i++; j = 0; }
-        }
-    }
-}
-
 // Find position
 void findPos(char c, int &row, int &col) {
     if (c == 'J') c = 'I';
+
     for (row = 0; row < 5; row++) {
         for (col = 0; col < 5; col++) {
             if (matrix[row][col] == c)
@@ -37,21 +15,75 @@ void findPos(char c, int &row, int &col) {
     }
 }
 
+// Generate matrix
+void generateMatrix(string key) {
+    bool used[26] = {false};
+    int r = 0, c = 0;
+
+    for (char &ch : key) {
+        ch = toupper(ch);
+        if (ch == 'J') ch = 'I';
+
+        if (!used[ch - 'A']) {
+            matrix[r][c++] = ch;
+            used[ch - 'A'] = true;
+            if (c == 5) { r++; c = 0; }
+        }
+    }
+
+    for (char ch = 'A'; ch <= 'Z'; ch++) {
+        if (ch == 'J') continue;
+
+        if (!used[ch - 'A']) {
+            matrix[r][c++] = ch;
+            if (c == 5) { r++; c = 0; }
+        }
+    }
+}
+
+// Prepare text (for encryption only)
+string prepareText(string text) {
+    string s = "";
+
+    for (char c : text) {
+        if (isalpha(c)) {
+            c = toupper(c);
+            if (c == 'J') c = 'I';
+            s += c;
+        }
+    }
+
+    string res = "";
+
+    for (int i = 0; i < s.length(); i++) {
+        res += s[i];
+
+        if (i + 1 < s.length() && s[i] == s[i + 1]) {
+            res += 'X';
+        }
+    }
+
+    if (res.length() % 2 != 0)
+        res += 'X';
+
+    return res;
+}
+
 // Encrypt pair
 string encryptPair(char a, char b) {
     int r1, c1, r2, c2;
     findPos(a, r1, c1);
     findPos(b, r2, c2);
 
-    if (r1 == r2) // same row
+    if (r1 == r2)
         return string(1, matrix[r1][(c1 + 1) % 5]) +
                string(1, matrix[r2][(c2 + 1) % 5]);
 
-    else if (c1 == c2) // same column
+    else if (c1 == c2)
         return string(1, matrix[(r1 + 1) % 5][c1]) +
                string(1, matrix[(r2 + 1) % 5][c2]);
 
-    else // rectangle
+    else
         return string(1, matrix[r1][c2]) +
                string(1, matrix[r2][c1]);
 }
@@ -62,56 +94,66 @@ string decryptPair(char a, char b) {
     findPos(a, r1, c1);
     findPos(b, r2, c2);
 
-    if (r1 == r2) // same row → shift LEFT
+    if (r1 == r2)
         return string(1, matrix[r1][(c1 + 4) % 5]) +
                string(1, matrix[r2][(c2 + 4) % 5]);
 
-    else if (c1 == c2) // same column → shift UP
+    else if (c1 == c2)
         return string(1, matrix[(r1 + 4) % 5][c1]) +
                string(1, matrix[(r2 + 4) % 5][c2]);
 
-    else // rectangle (same as encryption)
+    else
         return string(1, matrix[r1][c2]) +
                string(1, matrix[r2][c1]);
 }
 
-// Prepare plaintext
-string prepareText(string text) {
-    string result = "";
-
-    for (int i = 0; i < text.length(); i++) {
-        result += text[i];
-        if (i + 1 < text.length() && text[i] == text[i + 1])
-            result += 'X';
-    }
-
-    if (result.length() % 2 != 0)
-        result += 'X';
-
-    return result;
-}
-
 int main() {
-    string key = "MONARCHY";
-    string text = "HELLO";
+    string key, text;
+    int choice;
+
+    cout << "1. Encrypt\n2. Decrypt\nEnter choice: ";
+    cin >> choice;
+    cin.ignore(); // clear buffer
+
+    cout << "Enter key: ";
+    getline(cin, key);
 
     generateMatrix(key);
 
-    string prepared = prepareText(text);
+    cout << "\n5x5 Matrix:\n";
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++)
+            cout << matrix[i][j] << " ";
+        cout << endl;
+    }
 
-    // Encryption
-    string encrypted = "";
-    for (int i = 0; i < prepared.length(); i += 2)
-        encrypted += encryptPair(prepared[i], prepared[i + 1]);
+    if (choice == 1) {
+        cout << "\nEnter plaintext: ";
+        getline(cin, text);
 
-    cout << "Encrypted: " << encrypted << endl;
+        string prepared = prepareText(text);
+        cout << "Prepared Text: " << prepared << endl;
 
-    // Decryption
-    string decrypted = "";
-    for (int i = 0; i < encrypted.length(); i += 2)
-        decrypted += decryptPair(encrypted[i], encrypted[i + 1]);
+        string encrypted = "";
+        for (int i = 0; i < prepared.length(); i += 2)
+            encrypted += encryptPair(prepared[i], prepared[i + 1]);
 
-    cout << "Decrypted: " << decrypted << endl;
+        cout << "Encrypted: " << encrypted << endl;
+    }
+    else if (choice == 2) {
+        cout << "\nEnter ciphertext: ";
+        getline(cin, text);
+
+        // assume input already valid pairs
+        string decrypted = "";
+        for (int i = 0; i < text.length(); i += 2)
+            decrypted += decryptPair(text[i], text[i + 1]);
+
+        cout << "Decrypted: " << decrypted << endl;
+    }
+    else {
+        cout << "Invalid choice!\n";
+    }
 
     return 0;
 }
