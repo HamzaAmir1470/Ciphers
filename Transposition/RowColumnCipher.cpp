@@ -47,7 +47,7 @@ string decrypt(string cipher, int cols) {
 }
 
 int main() {
-    string text = "HELLOWORLD";
+    string text = "Univerityofeducation";
     int cols = 4;
 
     string enc = encrypt(text, cols);

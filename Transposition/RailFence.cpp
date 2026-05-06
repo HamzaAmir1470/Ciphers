@@ -69,7 +69,7 @@ string decryptRailFence(string cipher, int rails) {
 }
 
 int main() {
-    string text = "HELLOWORLD";
+    string text = "Universityofeducation";
     int rails = 3;
 
     string enc = encryptRailFence(text, rails);
